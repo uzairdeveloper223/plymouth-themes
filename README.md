@@ -13,7 +13,7 @@ A big collection of plymouth themes, ported from <i>android bootanimation</i> fr
 </p>
 
 <p align="center">
-  <a href="preview.html"><b>Preview All Themes Online</b></a> - Browse and preview all 80 themes in your browser without downloading!
+  <a href="https://uzair.ct.ws/plymouth-themes/index.html"><b>Preview All Themes Online</b></a> - Browse and preview all 80 themes in your browser without downloading!
 </p>
 
 ![gif](https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/53.gif)
