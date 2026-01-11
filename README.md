@@ -226,7 +226,7 @@ Red Loader|Splash
 </details>
 
 <!----------------------------- Pack 5 ----------------------------->
-<details><summary>Pack 5 (OEM Brand Themes) 🔥</summary>
+<details><summary>Pack 5 (OEM Brand Themes)</summary>
 
 > ⚠️ **No web preview for these** - clone the repo and use `plymouth-toolkit.py` to preview them locally
 
