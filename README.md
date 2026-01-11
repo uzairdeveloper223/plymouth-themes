@@ -13,7 +13,11 @@ A big collection of plymouth themes, ported from <i>android bootanimation</i> fr
 </p>
 
 <p align="center">
-  <a href="https://uzair.ct.ws/plymouth-themes/index.html"><b>Preview All Themes Online</b></a> - Browse and preview all 80 themes in your browser without downloading!
+  <a href="https://uzair.ct.ws/plymouth-themes/index.html"><b>🌐 Preview All Themes Online</b></a> - Browse and preview 80 themes in your browser without downloading!
+</p>
+
+<p align="center">
+  <i>⚠️ Pack 5 (OEM Brand Themes) not available online - clone repo & use <code>plymouth-toolkit.py</code> to preview</i>
 </p>
 
 ![gif](https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/53.gif)
@@ -218,6 +222,38 @@ Red Loader|Splash
 + [Tech A](https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/78.gif)
 + [Tech B](https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/79.gif)
 + [Unrap](https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/80.gif)
+
+</details>
+
+<!----------------------------- Pack 5 ----------------------------->
+<details><summary>Pack 5 (OEM Brand Themes) 🔥</summary>
+
+> ⚠️ **No web preview for these** - clone the repo and use `plymouth-toolkit.py` to preview them locally
+
+OEM/Brand themed boot animations - flex your laptop brand fr fr 💻
+
++ Acer 10
++ Acer Dark
++ Asus 10
++ Asus Dark
++ Dell 10
++ Dell Dark
++ HP 10
++ HP Dark
++ Huawei 10
++ Huawei Dark
++ Lenovo 10
++ Lenovo Dark
++ LG 10
++ LG Dark
++ Samsung 10
++ Samsung Dark
++ ThinkPad 10
++ ThinkPad Dark
++ Vaio 10
++ Vaio Dark
++ Xiaomi 10
++ Xiaomi Dark
 
 </details>
 

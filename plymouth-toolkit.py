@@ -163,10 +163,35 @@ class PlymouthViewer(Gtk.Window):
                 return 0
         frame_files = sorted(frame_files, key=extract_number)
         if not frame_files:
-            frame_files = sorted(theme_path.glob("*.png"))
-            frame_files = [f for f in frame_files if any(c.isdigit() for c in f.stem)]
+            numbered_files = [f for f in theme_path.glob("*.png") if any(c.isdigit() for c in f.stem)]
+            if numbered_files:
+                frame_files = sorted(numbered_files, key=lambda x: extract_number(x) if any(c.isdigit() for c in x.stem) else 0)
+        is_static = False
         if not frame_files:
-            self.info_label.set_text(f"No animation frames found in {theme_path.name}")
+            logo_file = theme_path / "logo.png"
+            if logo_file.exists():
+                frame_files = [logo_file]
+                is_static = True
+            else:
+                static_files = list(theme_path.glob("*.png"))
+                if static_files:
+                    preferred = ['logo.png', 'background.png', 'animation.png', 'splash.png']
+                    for pref in preferred:
+                        pref_file = theme_path / pref
+                        if pref_file.exists():
+                            frame_files = [pref_file]
+                            is_static = True
+                            break
+                    if not frame_files and static_files:
+                        frame_files = [static_files[0]]
+                        is_static = True
+        if not frame_files:
+            self.info_label.set_text(f"No preview available for {theme_path.name}\n(Script-based animation)")
+            self.play_button.set_sensitive(False)
+            self.stop_button.set_sensitive(False)
+            self.preview_plymouth_btn.set_sensitive(True)
+            self.install_button.set_sensitive(True)
+            self.apply_button.set_sensitive(True)
             return
         for frame_file in frame_files:
             try:
@@ -178,13 +203,18 @@ class PlymouthViewer(Gtk.Window):
         if self.current_frames:
             self.preview_area.set_from_pixbuf(self.current_frames[0])
             theme_name = theme_path.name.replace("_", " ").title()
-            self.info_label.set_text(f"Theme: {theme_name}\nFrames: {len(self.current_frames)}\nPath: {theme_path}")
-            self.play_button.set_sensitive(True)
-            self.stop_button.set_sensitive(True)
+            if is_static:
+                self.info_label.set_text(f"Theme: {theme_name}\n(Static preview - uses script animation)\nPath: {theme_path}")
+                self.play_button.set_sensitive(False)
+                self.stop_button.set_sensitive(False)
+            else:
+                self.info_label.set_text(f"Theme: {theme_name}\nFrames: {len(self.current_frames)}\nPath: {theme_path}")
+                self.play_button.set_sensitive(True)
+                self.stop_button.set_sensitive(True)
+                self.start_animation()
             self.preview_plymouth_btn.set_sensitive(True)
             self.install_button.set_sensitive(True)
             self.apply_button.set_sensitive(True)
-            self.start_animation()
 
     def scale_pixbuf(self, pixbuf, max_width, max_height):
         width = pixbuf.get_width()
@@ -313,18 +343,37 @@ class PlymouthViewer(Gtk.Window):
         )
         dialog.format_secondary_text(
             "This will:\n"
-            "1. Install the theme (if not already installed)\n"
-            "2. Set it as the default Plymouth theme\n"
-            "3. Rebuild initramfs\n\n"
-            "Requires root privileges.\n\n"
-            "Commands to run:\n"
-            f"sudo cp -r {self.current_theme_path} /usr/share/plymouth/themes/\n"
-            f"sudo plymouth-set-default-theme -R {theme_name}"
+            "1. Copy theme to /usr/share/plymouth/themes/\n"
+            "2. Register and set as default Plymouth theme\n"
+            "3. Update initramfs\n\n"
+            "Requires root privileges."
         )
         response = dialog.run()
         dialog.destroy()
         if response == Gtk.ResponseType.YES:
             self.apply_theme(theme_name)
+
+    def detect_distro(self):
+        try:
+            with open('/etc/os-release', 'r') as f:
+                content = f.read().lower()
+                if 'ubuntu' in content or 'debian' in content or 'mint' in content or 'pop' in content:
+                    return 'debian'
+                elif 'fedora' in content or 'rhel' in content or 'centos' in content:
+                    return 'fedora'
+                elif 'arch' in content or 'manjaro' in content or 'endeavour' in content:
+                    return 'arch'
+                elif 'opensuse' in content or 'suse' in content:
+                    return 'suse'
+        except:
+            pass
+        if os.path.exists('/usr/bin/update-alternatives'):
+            return 'debian'
+        elif os.path.exists('/usr/sbin/plymouth-set-default-theme'):
+            return 'fedora'
+        elif os.path.exists('/usr/bin/plymouth-set-default-theme'):
+            return 'arch'
+        return 'unknown'
 
     def apply_theme(self, theme_name):
         progress_dialog = Gtk.MessageDialog(
@@ -348,16 +397,67 @@ class PlymouthViewer(Gtk.Window):
                 progress_dialog.destroy()
                 self.show_message("Error", f"Failed to copy theme:\n{result.stderr}", Gtk.MessageType.ERROR)
                 return
-            result = subprocess.run(
-                ['pkexec', 'plymouth-set-default-theme', '-R', theme_name],
-                capture_output=True,
-                text=True
-            )
+            distro = self.detect_distro()
+            plymouth_file = f"/usr/share/plymouth/themes/{theme_name}/{theme_name}.plymouth"
+            if distro == 'debian':
+                result = subprocess.run(
+                    ['pkexec', 'update-alternatives', '--install', 
+                     '/usr/share/plymouth/themes/default.plymouth', 'default.plymouth',
+                     plymouth_file, '100'],
+                    capture_output=True,
+                    text=True
+                )
+                if result.returncode != 0:
+                    progress_dialog.destroy()
+                    self.show_message("Error", f"Failed to register theme:\n{result.stderr}", Gtk.MessageType.ERROR)
+                    return
+                result = subprocess.run(
+                    ['pkexec', 'update-alternatives', '--set', 'default.plymouth', plymouth_file],
+                    capture_output=True,
+                    text=True
+                )
+                if result.returncode != 0:
+                    progress_dialog.destroy()
+                    self.show_message("Error", f"Failed to set theme:\n{result.stderr}", Gtk.MessageType.ERROR)
+                    return
+                result = subprocess.run(
+                    ['pkexec', 'update-initramfs', '-u'],
+                    capture_output=True,
+                    text=True
+                )
+            elif distro in ['fedora', 'arch']:
+                plymouth_cmd = '/usr/sbin/plymouth-set-default-theme' if distro == 'fedora' else 'plymouth-set-default-theme'
+                result = subprocess.run(
+                    ['pkexec', plymouth_cmd, theme_name, '-R'],
+                    capture_output=True,
+                    text=True
+                )
+            elif distro == 'suse':
+                result = subprocess.run(
+                    ['pkexec', 'plymouth-set-default-theme', theme_name],
+                    capture_output=True,
+                    text=True
+                )
+                if result.returncode == 0:
+                    result = subprocess.run(
+                        ['pkexec', 'dracut', '-f'],
+                        capture_output=True,
+                        text=True
+                    )
+            else:
+                progress_dialog.destroy()
+                self.show_message("Info", 
+                    f"Theme copied to /usr/share/plymouth/themes/{theme_name}\n\n"
+                    "Could not detect distro. Please run manually:\n"
+                    "Fedora/Arch: sudo plymouth-set-default-theme -R " + theme_name + "\n"
+                    "Debian/Ubuntu: sudo update-alternatives --install ... && sudo update-initramfs -u",
+                    Gtk.MessageType.INFO)
+                return
             progress_dialog.destroy()
             if result.returncode == 0:
                 self.show_message("Success", f"Theme '{theme_name}' has been applied!\n\nThe theme will be visible on your next boot.")
             else:
-                self.show_message("Error", f"Failed to apply theme:\n{result.stderr}", Gtk.MessageType.ERROR)
+                self.show_message("Warning", f"Theme may be set but there were issues:\n{result.stderr}", Gtk.MessageType.WARNING)
         except Exception as e:
             progress_dialog.destroy()
             self.show_message("Error", f"Failed to apply theme:\n{str(e)}", Gtk.MessageType.ERROR)
