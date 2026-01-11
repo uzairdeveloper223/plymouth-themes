@@ -13,11 +13,11 @@ A big collection of plymouth themes, ported from <i>android bootanimation</i> fr
 </p>
 
 <p align="center">
-  <a href="https://uzair.ct.ws/plymouth-themes/index.html"><b>🌐 Preview All Themes Online</b></a> - Browse and preview 80 themes in your browser without downloading!
+  <a href="https://uzair.ct.ws/plymouth-themes/index.html"><b>Preview All Themes Online</b></a> - Browse and preview 80 themes in your browser without downloading!
 </p>
 
 <p align="center">
-  <i>⚠️ Pack 5 (OEM Brand Themes) not available online - clone repo & use <code>plymouth-toolkit.py</code> to preview</i>
+  <i>⚠️Pack 5 (OEM Brand Themes) not available online - clone repo & use <code>plymouth-toolkit.py</code> to preview</i>
 </p>
 
 ![gif](https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/53.gif)
@@ -230,7 +230,7 @@ Red Loader|Splash
 
 > ⚠️ **No web preview for these** - clone the repo and use `plymouth-toolkit.py` to preview them locally
 
-OEM/Brand themed boot animations - flex your laptop brand fr fr 💻
+OEM/Brand themed boot animations - flex your laptop brand fr fr
 
 + Acer 10
 + Acer Dark
