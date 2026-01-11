@@ -12,6 +12,10 @@
 A big collection of plymouth themes, ported from <i>android bootanimation</i> from <a href="https://forum.xda-developers.com/android/themes/alienware-t3721978">here.</a>
 </p>
 
+<p align="center">
+  <a href="preview.html"><b>Preview All Themes Online</b></a> - Browse and preview all 80 themes in your browser without downloading!
+</p>
+
 ![gif](https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/53.gif)
 
 ### What is plymouth?
@@ -36,6 +40,15 @@ git clone https://github.com/adi1090x/plymouth-themes.git
 yay -S plymouth-theme-NAME-git
 ```
 > Remember to replace the underscore(\_) with an hyphen(-) in theme's NAME.
+
+### Plymouth Toolkit
+
+A GUI application to preview and apply Plymouth themes locally.**After cloning the repo run with**:
+```bash
+python3 plymouth-toolkit.py
+```
+
+Requires: `python3-gi`, `gir1.2-gtk-3.0`
 
 ### Important for Arch users
 
@@ -232,3 +245,16 @@ The given example looks like the following when applied (`rog_2` theme used):
 + Created and tested on machine with 1366x768 resolution.
 + Yeah, that's how *quarantine* going on :grin:.
 + Stay Home - Stay Safe, Help Fighting CORONA.
+
+### Plymouth Toolkit
+
+A GUI application to preview and apply Plymouth themes locally. Run with:
+```bash
+python3 plymouth-toolkit.py
+```
+Requires: `python3-gi`, `gir1.2-gtk-3.0`
+
+### Web Preview
+
+Open `preview.html` in your browser to preview all themes online without downloading.
+

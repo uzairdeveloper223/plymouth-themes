@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plymouth Themes - Web Preview</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); min-height: 100vh; color: #fff; }
+        .header { text-align: center; padding: 30px 20px; background: rgba(0, 0, 0, 0.3); border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        .header h1 { font-size: 2.5rem; margin-bottom: 10px; background: linear-gradient(90deg, #00d4ff, #7b2cbf); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .header p { color: #aaa; font-size: 1.1rem; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .controls { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-bottom: 30px; padding: 20px; background: rgba(0, 0, 0, 0.2); border-radius: 15px; }
+        .filter-btn { padding: 10px 25px; border: none; border-radius: 25px; cursor: pointer; font-size: 1rem; transition: all 0.3s ease; background: rgba(255, 255, 255, 0.1); color: #fff; border: 1px solid rgba(255, 255, 255, 0.2); }
+        .filter-btn:hover, .filter-btn.active { background: linear-gradient(90deg, #00d4ff, #7b2cbf); border-color: transparent; transform: translateY(-2px); }
+        .search-box { padding: 12px 25px; border: none; border-radius: 25px; font-size: 1rem; width: 300px; background: rgba(255, 255, 255, 0.1); color: #fff; border: 1px solid rgba(255, 255, 255, 0.2); }
+        .search-box::placeholder { color: #888; }
+        .search-box:focus { outline: none; border-color: #00d4ff; }
+        .themes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; }
+        .theme-card { background: rgba(0, 0, 0, 0.3); border-radius: 15px; overflow: hidden; transition: all 0.3s ease; border: 1px solid rgba(255, 255, 255, 0.1); }
+        .theme-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4); border-color: #00d4ff; }
+        .theme-preview { width: 100%; height: 200px; background: #000; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; }
+        .theme-preview img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .theme-preview .fullscreen-hint { position: absolute; bottom: 10px; right: 10px; background: rgba(0, 0, 0, 0.7); padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; opacity: 0; transition: opacity 0.3s; }
+        .theme-preview:hover .fullscreen-hint { opacity: 1; }
+        .theme-info { padding: 15px 20px; }
+        .theme-info h3 { font-size: 1.2rem; margin-bottom: 5px; color: #00d4ff; }
+        .theme-info .pack-badge { display: inline-block; padding: 3px 10px; background: rgba(123, 44, 191, 0.3); border-radius: 10px; font-size: 0.8rem; color: #c9a0ff; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; }
+        .modal.active { display: flex; }
+        .modal-content { max-width: 90%; max-height: 80%; }
+        .modal-content img { max-width: 100%; max-height: 70vh; border-radius: 10px; }
+        .modal-title { margin-top: 20px; font-size: 1.5rem; color: #00d4ff; }
+        .modal-close { position: absolute; top: 20px; right: 30px; font-size: 2.5rem; cursor: pointer; color: #fff; transition: color 0.3s; }
+        .modal-close:hover { color: #00d4ff; }
+        .modal-nav { position: absolute; top: 50%; transform: translateY(-50%); font-size: 3rem; cursor: pointer; color: #fff; padding: 20px; transition: color 0.3s; }
+        .modal-nav:hover { color: #00d4ff; }
+        .modal-prev { left: 20px; }
+        .modal-next { right: 20px; }
+        .footer { text-align: center; padding: 30px; margin-top: 50px; background: rgba(0, 0, 0, 0.3); border-top: 1px solid rgba(255, 255, 255, 0.1); }
+        .footer a { color: #00d4ff; text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
+        .stats { display: flex; justify-content: center; gap: 40px; margin-top: 20px; flex-wrap: wrap; }
+        .stat-item { text-align: center; }
+        .stat-item .number { font-size: 2rem; font-weight: bold; color: #00d4ff; }
+        .stat-item .label { color: #888; font-size: 0.9rem; }
+        @media (max-width: 768px) { .header h1 { font-size: 1.8rem; } .search-box { width: 100%; } .themes-grid { grid-template-columns: 1fr; } .modal-nav { font-size: 2rem; padding: 10px; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎨 Plymouth Themes Gallery</h1>
+        <p>Preview 80+ beautiful boot animations before installing</p>
+        <div class="stats">
+            <div class="stat-item"><div class="number">80</div><div class="label">Themes</div></div>
+            <div class="stat-item"><div class="number">4</div><div class="label">Packs</div></div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="controls">
+            <input type="text" class="search-box" placeholder="🔍 Search themes..." id="searchInput">
+            <button class="filter-btn active" data-pack="all">All Themes</button>
+            <button class="filter-btn" data-pack="1">Pack 1</button>
+            <button class="filter-btn" data-pack="2">Pack 2</button>
+            <button class="filter-btn" data-pack="3">Pack 3</button>
+            <button class="filter-btn" data-pack="4">Pack 4</button>
+        </div>
+        <div class="themes-grid" id="themesGrid"></div>
+    </div>
+    <div class="modal" id="modal">
+        <span class="modal-close" onclick="closeModal()">&times;</span>
+        <span class="modal-nav modal-prev" onclick="navigateModal(-1)">&#10094;</span>
+        <span class="modal-nav modal-next" onclick="navigateModal(1)">&#10095;</span>
+        <div class="modal-content"><img id="modalImage" src="" alt=""></div>
+        <div class="modal-title" id="modalTitle"></div>
+    </div>
+    <div class="footer">
+        <p>Original themes by <a href="https://github.com/adi1090x" target="_blank">Aditya Shakya (@adi1090x)</a></p>
+        <p>Web Preview by <a href="https://uzair.is-a.dev" target="_blank">Uzair Mughal</a> | <a href="https://instagram.com/mughal_x22" target="_blank">Instagram</a> | <a href="https://discord.com/users/mughal_x22" target="_blank">Discord</a></p>
+        <p style="margin-top: 15px;"><a href="https://github.com/adi1090x/plymouth-themes" target="_blank">⭐ Star on GitHub</a></p>
+    </div>
+    <script>
+        const themes = [
+            { name: "Abstract Rings", pack: 1, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/1.gif" },
+            { name: "Abstract Rings Alt", pack: 1, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/2.gif" },
+            { name: "Alienware", pack: 1, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/3.gif" },
+            { name: "Angular", pack: 1, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/4.gif" },
+            { name: "Angular Alt", pack: 1, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/5.gif" },
+            { name: "Black HUD", pack: 1, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/6.gif" },
+            { name: "Blockchain", pack: 1, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/7.gif" },
+            { name: "Circle", pack: 1, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/8.gif" },
+            { name: "Circle Alt", pack: 1, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/9.gif" },
+            { name: "Circle Flow", pack: 1, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/10.gif" },
+            { name: "Circle HUD", pack: 1, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/11.gif" },
+            { name: "Circuit", pack: 1, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/12.gif" },
+            { name: "Colorful", pack: 1, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/13.gif" },
+            { name: "Colorful Loop", pack: 1, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/14.gif" },
+            { name: "Colorful Sliced", pack: 1, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/15.gif" },
+            { name: "Connect", pack: 1, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/16.gif" },
+            { name: "Cross HUD", pack: 1, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/17.gif" },
+            { name: "Cubes", pack: 1, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/18.gif" },
+            { name: "Cuts", pack: 1, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/19.gif" },
+            { name: "Cuts Alt", pack: 1, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/20.gif" },
+            { name: "Cyanide", pack: 2, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/21.gif" },
+            { name: "Cybernetic", pack: 2, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/22.gif" },
+            { name: "Dark Planet", pack: 2, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/23.gif" },
+            { name: "Darth Vader", pack: 2, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/24.gif" },
+            { name: "Deus Ex", pack: 2, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/25.gif" },
+            { name: "DNA", pack: 2, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/26.gif" },
+            { name: "Double", pack: 2, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/27.gif" },
+            { name: "Dragon", pack: 2, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/28.gif" },
+            { name: "Flame", pack: 2, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/29.gif" },
+            { name: "Glitch", pack: 2, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/30.gif" },
+            { name: "Glow", pack: 2, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/31.gif" },
+            { name: "Green Blocks", pack: 2, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/32.gif" },
+            { name: "Green Loader", pack: 2, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/33.gif" },
+            { name: "Hexagon", pack: 2, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/34.gif" },
+            { name: "Hexagon 2", pack: 2, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/35.gif" },
+            { name: "Hexagon Alt", pack: 2, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/36.gif" },
+            { name: "Hexagon Dots", pack: 2, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/37.gif" },
+            { name: "Hexagon Dots Alt", pack: 2, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/38.gif" },
+            { name: "Hexagon HUD", pack: 2, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/39.gif" },
+            { name: "Hexagon RED", pack: 2, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/40.gif" },
+            { name: "Hexa Retro", pack: 3, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/41.gif" },
+            { name: "Hud", pack: 3, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/42.gif" },
+            { name: "Hud 2", pack: 3, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/43.gif" },
+            { name: "Hud 3", pack: 3, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/44.gif" },
+            { name: "Hud Space", pack: 3, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/45.gif" },
+            { name: "IBM", pack: 3, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/46.gif" },
+            { name: "Infinite Seal", pack: 3, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/47.gif" },
+            { name: "Ironman", pack: 3, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/48.gif" },
+            { name: "Liquid", pack: 3, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/49.gif" },
+            { name: "Loader", pack: 3, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/50.gif" },
+            { name: "Loader 2", pack: 3, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/51.gif" },
+            { name: "Loader Alt", pack: 3, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/52.gif" },
+            { name: "Lone", pack: 3, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/53.gif" },
+            { name: "Metal Ball", pack: 3, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/54.gif" },
+            { name: "Motion", pack: 3, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/55.gif" },
+            { name: "Optimus", pack: 3, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/56.gif" },
+            { name: "Owl", pack: 3, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/57.gif" },
+            { name: "Pie", pack: 3, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/58.gif" },
+            { name: "Pixels", pack: 3, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/59.gif" },
+            { name: "Polaroid", pack: 3, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/60.gif" },
+            { name: "Red Loader", pack: 4, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/61.gif" },
+            { name: "Rings", pack: 4, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/62.gif" },
+            { name: "Rings 2", pack: 4, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/63.gif" },
+            { name: "Rog", pack: 4, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/64.gif" },
+            { name: "Rog 2", pack: 4, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/65.gif" },
+            { name: "Seal", pack: 4, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/66.gif" },
+            { name: "Seal 2", pack: 4, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/67.gif" },
+            { name: "Seal 3", pack: 4, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/68.gif" },
+            { name: "Sliced", pack: 4, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/69.gif" },
+            { name: "Sphere", pack: 4, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/70.gif" },
+            { name: "Spin", pack: 4, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/71.gif" },
+            { name: "Spinner Alt", pack: 4, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/72.gif" },
+            { name: "Splash", pack: 4, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/73.gif" },
+            { name: "Square", pack: 4, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/74.gif" },
+            { name: "Square Hud", pack: 4, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/75.gif" },
+            { name: "Target", pack: 4, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/76.gif" },
+            { name: "Target 2", pack: 4, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/77.gif" },
+            { name: "Tech A", pack: 4, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/78.gif" },
+            { name: "Tech B", pack: 4, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/79.gif" },
+            { name: "Unrap", pack: 4, gif: "https://raw.githubusercontent.com/adi1090x/files/master/plymouth-themes/previews/80.gif" }
+        ];
+        let currentFilter = 'all';
+        let currentSearch = '';
+        let currentModalIndex = 0;
+        let filteredThemes = [...themes];
+        function renderThemes() {
+            const grid = document.getElementById('themesGrid');
+            filteredThemes = themes.filter(theme => {
+                const matchesPack = currentFilter === 'all' || theme.pack === parseInt(currentFilter);
+                const matchesSearch = theme.name.toLowerCase().includes(currentSearch.toLowerCase());
+                return matchesPack && matchesSearch;
+            });
+            grid.innerHTML = filteredThemes.map((theme, index) => `
+                <div class="theme-card" data-index="${index}">
+                    <div class="theme-preview" onclick="openModal(${index})">
+                        <img src="${theme.gif}" alt="${theme.name}" loading="lazy">
+                        <span class="fullscreen-hint">Click for fullscreen</span>
+                    </div>
+                    <div class="theme-info">
+                        <h3>${theme.name}</h3>
+                        <span class="pack-badge">Pack ${theme.pack}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        function openModal(index) {
+            currentModalIndex = index;
+            const theme = filteredThemes[index];
+            document.getElementById('modalImage').src = theme.gif;
+            document.getElementById('modalTitle').textContent = theme.name;
+            document.getElementById('modal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        function navigateModal(direction) {
+            currentModalIndex = (currentModalIndex + direction + filteredThemes.length) % filteredThemes.length;
+            const theme = filteredThemes[currentModalIndex];
+            document.getElementById('modalImage').src = theme.gif;
+            document.getElementById('modalTitle').textContent = theme.name;
+        }
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.pack;
+                renderThemes();
+            });
+        });
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            currentSearch = e.target.value;
+            renderThemes();
+        });
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if (e.target.id === 'modal') closeModal();
+        });
+        document.addEventListener('keydown', (e) => {
+            if (!document.getElementById('modal').classList.contains('active')) return;
+            if (e.key === 'Escape') closeModal();
+            if (e.key === 'ArrowLeft') navigateModal(-1);
+            if (e.key === 'ArrowRight') navigateModal(1);
+        });
+        renderThemes();
+    </script>
+</body>
+</html>
