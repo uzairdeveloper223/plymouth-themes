@@ -232,6 +232,8 @@ Red Loader|Splash
 
 OEM/Brand themed boot animations - flex your laptop brand fr fr
 
+credits for this pack goes to this [Github Repo](https://github.com/gevera/plymouth_themes.git)
+
 + Acer 10
 + Acer Dark
 + Asus 10
